@@ -1,7 +1,3 @@
-from .resources import CurrencyResource
-from .utils import register_currencies, register_markets
+from .resources import CurrencyResource, MarketResource
 
-__all__ = ['CurrencyResource', ]
-
-register_currencies()
-register_markets()
+__all__ = ['CurrencyResource', 'MarketResource']

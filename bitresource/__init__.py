@@ -5,11 +5,11 @@ from registry import Registry
 class ResourceRegistry(Registry):
     def get_object_name(self, data):
         if hasattr(data, 'name'):
-            exchange_name = getattr(data, 'name')
+            exchange_code = getattr(data, 'name')
 
-            exchange_registry.register(Exchange(name=exchange_name), name=exchange_name)
+            exchange_registry.register(Exchange(code=exchange_code), name=exchange_code)
 
-            return exchange_name
+            return exchange_code
 
         return super(ResourceRegistry, self).get_object_name(data)
 

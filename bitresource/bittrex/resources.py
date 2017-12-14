@@ -1,4 +1,5 @@
-from bitresource import resource_registry
+from bitresource import resource_registry, exchange_registry
+from bitutils.objects import Currency, Market, Ticker
 from dictutils import AttrDict
 from http_resource import HttpResource
 
@@ -31,8 +32,36 @@ class BittrexResource(HttpResource):
                 yield AttrDict(result)
 
     @classmethod
-    def ticker(cls, market):
-        return TickerResource.data(market=market).first()
+    def get_currencies(cls):
+        results = []
+
+        for currency in CurrencyResource.data():
+            currency = Currency(code=currency.Currency, name=currency.CurrencyLong, type=currency.CoinType)
+            results.append(currency)
+
+        return results
+
+    @classmethod
+    def get_markets(cls):
+        results = []
+
+        for market in MarketResource.data():
+            base = market.BaseCurrency
+            quote = market.MarketCurrency
+            market_code = '%s%s' % (base, quote)
+            market_name = '%s-%s' % (base, quote)
+
+            market = Market(code=market_code, name=market_name, base=base, quote=quote)
+            results.append(market)
+
+        return results
+
+    @classmethod
+    def ticker(cls, market, exchange):
+        """{'Last': 0.01798739, 'Ask': 0.01798739, 'Bid': 0.017987}"""
+        data = TickerResource.data(market=market.name).first()
+
+        return Ticker(bid=data.Bid, ask=data.Ask, last=data.Last, market=market, exchange=exchange)
 
 
 CurrencyResource = BittrexResource('public', 'getcurrencies')

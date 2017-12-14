@@ -7,7 +7,7 @@ with open('README.md') as fp:
 
 setup(
     name='bitresource',
-    version='0.1.0',
+    version='0.1.1',
     description='Crypto Currency Resource Library',
     long_description=long_description,
     author='Hasan Basri',

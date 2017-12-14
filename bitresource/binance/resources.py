@@ -1,4 +1,5 @@
 from bitresource import resource_registry
+from bitutils.objects import Currency, Market, Ticker
 from dictutils import AttrDict
 from http_resource import HttpResource
 
@@ -9,32 +10,66 @@ class BinanceResource(HttpResource):
     endpoint_url = 'https://www.binance.com/api'
 
     def results_iter(self, response, **kwargs):
-        results = response.json()
-        result_data = []
+        resp_json = response.json()
+        result_rows = []
 
-        if type(results) is dict:
-            if 'result' in results:
-                results = results.get('result')
-                if type(results) is dict:
-                    yield AttrDict(results)
-                else:
-                    result_data = results
-            elif 'symbols' in results:
-                result_data = results.get('symbols')
+        if type(resp_json) is dict:
+            if 'symbols' in resp_json:
+                result_rows = resp_json.get('symbols')
             else:
-                result_data = list(results.items())
+                yield AttrDict(resp_json)
 
-        for result in result_data:
-
-            if type(result) is tuple:
-                result[1].update({'_key': result[0]})
-                yield AttrDict(result[1])
-            else:
-                yield AttrDict(result)
+        if result_rows:
+            for result_row in result_rows:
+                yield AttrDict(result_row)
 
     @classmethod
-    def ticker(cls, market):
-        return TickerResource.data(market=market).first()
+    def get_currencies(cls):
+        """
+            {'icebergAllowed': True,
+             'baseAssetPrecision': 8,
+             'symbol': 'ETHBTC',
+             'baseAsset': 'ETH',
+             'quoteAsset': 'BTC',
+             'status': 'TRADING',
+             'quotePrecision': 8}
+        """
+        results = []
+
+        for currency in CurrencyResource.data():
+            currency = Currency(code=currency.quoteAsset, decimals=currency.quotePrecision)
+            results.append(currency)
+
+        return results
+
+    @classmethod
+    def get_markets(cls):
+        """
+            {'icebergAllowed': True,
+             'baseAssetPrecision': 8,
+             'symbol': 'ETHBTC',
+             'baseAsset': 'ETH',
+             'quoteAsset': 'BTC',
+             'status': 'TRADING',
+             'quotePrecision': 8}
+        """
+        results = []
+
+        for market in MarketResource.data():
+            market_name = '%s-%s' % (market.quoteAsset, market.baseAsset)
+
+            market = Market(code=market_name.replace('-', ''), name=market_name, base=market.quoteAsset,
+                            quote=market.baseAsset)
+            results.append(market)
+
+        return results
+
+    @classmethod
+    def ticker(cls, market, exchange):
+        symbol = ''.join([market.name.split('-')[1], market.name.split('-')[0]])
+        data = TickerResource.data(symbol=symbol).first()
+
+        return Ticker(last=data.price, market=market.code, exchange=exchange)
 
 
 CurrencyResource = BinanceResource('v1', 'exchangeInfo')
