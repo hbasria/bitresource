@@ -7,7 +7,7 @@ with open('README.md') as fp:
 
 setup(
     name='bitresource',
-    version='0.1.1',
+    version='0.1.2',
     description='Crypto Currency Resource Library',
     long_description=long_description,
     author='Hasan Basri',
@@ -16,6 +16,7 @@ setup(
     keywords='Crypto Currency Library',
     url='https://github.com/hbasria/bitresource',
     packages=find_packages(exclude=['contrib', 'docs', 'tests']),
+    install_requires=['http-resource~=0.1.0'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
